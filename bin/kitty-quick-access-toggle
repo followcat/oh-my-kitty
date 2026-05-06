@@ -60,15 +60,23 @@ layout_window() {
   screen_height="$2"
   max_height=$((screen_height - TOP))
   [ "$height" -gt "$max_height" ] && height="$max_height"
-  xdotool windowmove "$wid" 0 "$TOP"
-  xdotool windowsize "$wid" "$width" "$height"
+  
+  # Force geometry first
+  xdotool windowsize "$wid" "$width" "$height" 2>/dev/null || true
+  xdotool windowmove "$wid" 0 "$TOP" 2>/dev/null || true
   
   # Remove decorations using MOTIF hints
   xprop -id "$wid" -f _MOTIF_WM_HINTS 32c -set _MOTIF_WM_HINTS "2, 0, 0, 0, 0" 2>/dev/null || true
   
-  xdotool windowactivate "$wid"
+  # Set window properties to prevent centering/repositioning
+  xdotool windowactivate "$wid" 2>/dev/null || true
   xprop -id "$wid" -f _NET_WM_STATE 32a -set _NET_WM_STATE \
     "_NET_WM_STATE_ABOVE,_NET_WM_STATE_SKIP_TASKBAR,_NET_WM_STATE_SKIP_PAGER" >/dev/null 2>&1 || true
+  
+  # Apply geometry one more time to ensure it sticks
+  sleep 0.1
+  xdotool windowsize "$wid" "$width" "$height" 2>/dev/null || true
+  xdotool windowmove "$wid" 0 "$TOP" 2>/dev/null || true
 }
 
 wid="$(first_window || true)"
@@ -116,10 +124,14 @@ initial_width=$(($1 - 14))
 
 # Wait for window to appear and layout properly (with timeout)
 attempt=0
-max_attempts=20
+max_attempts=30
 while [ $attempt -lt $max_attempts ]; do
   wid="$(first_window || true)"
   if [ -n "$wid" ] && is_visible "$wid"; then
+    # Apply layout immediately when window becomes visible
+    layout_window "$wid"
+    sleep 0.05
+    # Apply one more time to ensure it sticks after window manager accepts it
     layout_window "$wid"
     xdotool windowactivate "$wid"
     exit 0
@@ -128,5 +140,5 @@ while [ $attempt -lt $max_attempts ]; do
   sleep 0.05
 done
 
-printf "WARNING: Kitty window failed to appear after 1 second\n" >&2
+printf "WARNING: Kitty window failed to appear after 1.5 seconds\n" >&2
 exit 1
