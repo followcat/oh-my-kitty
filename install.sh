@@ -19,20 +19,101 @@ mkdir -p ~/.config/kitty
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/state/kitty-quick-access
 
+# Backup existing files before replacing files managed by this project.
+backup_if_changed() {
+    src="$1"
+    dest="$2"
+
+    if [ -f "$dest" ] && ! cmp -s "$src" "$dest"; then
+        backup="${dest}.bak.$(date +%Y%m%d%H%M%S)"
+        cp "$dest" "$backup"
+        echo "Backed up existing file: $backup"
+    fi
+}
+
+install_file() {
+    src="$1"
+    dest="$2"
+    mode="${3:-0644}"
+
+    backup_if_changed "$src" "$dest"
+    cp "$src" "$dest"
+    chmod "$mode" "$dest"
+}
+
+render_config() {
+    src="$1"
+    dest="$2"
+    tmp="$(mktemp)"
+    sed "s|@HOME@|$HOME|g" "$src" > "$tmp"
+    install_file "$tmp" "$dest"
+    rm -f "$tmp"
+}
+
 # Copy config files
 echo "Copying config files..."
-cp "$CONFIG_DIR/kitty.conf" ~/.config/kitty/
-cp "$CONFIG_DIR/dropdown.conf" ~/.config/kitty/
+render_config "$CONFIG_DIR/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+render_config "$CONFIG_DIR/dropdown.conf" "$HOME/.config/kitty/dropdown.conf"
 
 # Copy binary files with proper permissions
 echo "Copying scripts..."
-cp "$BIN_DIR/kitty-quick-access-toggle" ~/.local/bin/
-chmod +x ~/.local/bin/kitty-quick-access-toggle
+install_file "$BIN_DIR/kitty-quick-access-toggle" "$HOME/.local/bin/kitty-quick-access-toggle" 0755
 
-cp "$BIN_DIR/kitty-quick-access-resize-height" ~/.local/bin/
-chmod +x ~/.local/bin/kitty-quick-access-resize-height
-cp "$BIN_DIR/kitty-quick-access-new-tab" ~/.local/bin/
-chmod +x ~/.local/bin/kitty-quick-access-new-tab
+install_file "$BIN_DIR/kitty-quick-access-resize-height" "$HOME/.local/bin/kitty-quick-access-resize-height" 0755
+install_file "$BIN_DIR/kitty-quick-access-new-tab" "$HOME/.local/bin/kitty-quick-access-new-tab" 0755
+install_file "$BIN_DIR/kitty-shortcuts-help" "$HOME/.local/bin/kitty-shortcuts-help" 0755
+
+add_custom_keybinding_path() {
+    path="$1"
+    current="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)"
+
+    case "$current" in
+        *"$path"*) return 0 ;;
+        "@as []"|"[]") next="['$path']" ;;
+        *) next="${current%]}, '$path']" ;;
+    esac
+
+    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "$next"
+}
+
+set_custom_keybinding() {
+    path="$1"
+    name="$2"
+    command="$3"
+    binding="$4"
+    schema="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$path"
+
+    add_custom_keybinding_path "$path"
+    gsettings set "$schema" name "$name"
+    gsettings set "$schema" command "$command"
+    gsettings set "$schema" binding "$binding"
+}
+
+install_gnome_shortcuts() {
+    if ! command -v gsettings >/dev/null 2>&1; then
+        echo "gsettings not found; skipping GNOME shortcuts."
+        return
+    fi
+
+    echo "Installing GNOME global shortcuts..."
+    set_custom_keybinding \
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/kitty-quick-access/" \
+        "Kitty Quick Access" \
+        "$HOME/.local/bin/kitty-quick-access-toggle" \
+        "<Primary>asciitilde"
+    set_custom_keybinding \
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/kitty-quick-access-height-up/" \
+        "Kitty Quick Access Height Up" \
+        "$HOME/.local/bin/kitty-quick-access-resize-height -80" \
+        "<Control>Up"
+    set_custom_keybinding \
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/kitty-quick-access-height-down/" \
+        "Kitty Quick Access Height Down" \
+        "$HOME/.local/bin/kitty-quick-access-resize-height 80" \
+        "<Control>Down"
+}
+
+install_gnome_shortcuts
 
 # Disable GNOME animations for smooth dropdown
 if command -v gsettings &> /dev/null; then
@@ -55,3 +136,4 @@ echo -e "${YELLOW}Scripts:${NC}"
 echo "- ~/.local/bin/kitty-quick-access-toggle"
 echo "- ~/.local/bin/kitty-quick-access-resize-height"
 echo "- ~/.local/bin/kitty-quick-access-new-tab"
+echo "- ~/.local/bin/kitty-shortcuts-help"

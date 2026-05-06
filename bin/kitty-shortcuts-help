@@ -1,0 +1,64 @@
+#!/bin/sh
+set -eu
+
+cat <<'EOF' | less -R
+Oh My FollowCat Kitty shortcuts
+
+Global
+  Ctrl+`              Toggle dropdown terminal
+  Ctrl+Up             Decrease dropdown height
+  Ctrl+Down           Increase dropdown height
+
+Tabs
+  Ctrl+Shift+T        New tab
+  Ctrl+Shift+W        Close tab
+  Ctrl+Tab            Next tab
+  Ctrl+Shift+Tab      Previous tab
+  Ctrl+PageDown       Next tab
+  Ctrl+PageUp         Previous tab
+  Ctrl+F1..F10        Go to tab 1..10
+  Ctrl+F12            Go to last tab
+
+Windows and layouts
+  Ctrl+Shift+-        Horizontal split
+  Ctrl+Shift+\        Vertical split
+  Ctrl+Shift+Enter    Vertical split
+  Ctrl+Shift+Left     Focus window left
+  Ctrl+Shift+Right    Focus window right
+  Ctrl+Shift+Up       Focus window up
+  Ctrl+Shift+Down     Focus window down
+  Ctrl+Left/Right     Resize window width
+  Ctrl+Up/Down        Resize window height or dropdown height
+  Ctrl+Alt+Arrows     Resize split window in dropdown
+  Ctrl+Shift+L        Next layout
+
+Shell integration
+  Ctrl+Shift+Z        Jump to previous prompt
+  Ctrl+Shift+X        Jump to next prompt
+  Ctrl+Shift+A        Return to last prompt jump
+  Ctrl+Shift+G        Show last non-empty command output
+  Ctrl+Shift+U        Show last visited command output
+
+Scrollback and marks
+  Ctrl+Shift+H        Show scrollback
+  Ctrl+Shift+/        Search scrollback
+  Ctrl+Shift+M        Create text marker
+  Ctrl+Alt+M          Remove text marker
+
+Hints and clipboard
+  Ctrl+Shift+O        Pick URL
+  Ctrl+Shift+P        Pick path
+  Ctrl+Shift+E        Pick word
+  Ctrl+Shift+C        Copy
+  Ctrl+Shift+V        Paste
+
+Font
+  Ctrl+=              Increase font size
+  Ctrl+-              Decrease font size
+  Ctrl+0              Reset font size
+
+Help
+  Ctrl+Shift+F1       Open this help
+
+Press q to close.
+EOF
