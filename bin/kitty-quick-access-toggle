@@ -12,6 +12,12 @@ TOP="${KITTY_DROPDOWN_TOP:-53}"
 
 mkdir -p "$STATE_DIR"
 
+# Verify config file exists before proceeding
+if [ ! -f "$CONFIG" ]; then
+  printf "ERROR: Config file not found: %s\n" "$CONFIG" >&2
+  exit 1
+fi
+
 # Make IME work reliably for kitty/fcitx5 on X11.
 : "${GTK_IM_MODULE:=fcitx}"
 : "${QT_IM_MODULE:=fcitx}"
@@ -39,6 +45,13 @@ is_minimized() {
   xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_HIDDEN'
 }
 
+is_config_applied() {
+  wid="$1"
+  # Check if opacity is set correctly (0.88) - quick indicator of config application
+  opacity=$(xprop -id "$wid" _NET_WM_WINDOW_OPACITY 2>/dev/null | grep -oP 'cardinal \K.*' || echo "0")
+  [ "$opacity" != "0" ]
+}
+
 layout_window() {
   wid="$1"
   height="$(dropdown_height)"
@@ -62,12 +75,21 @@ wid="$(first_window || true)"
 
 if [ -n "$wid" ]; then
   if is_visible "$wid" && ! is_minimized "$wid"; then
+    # Window is visible and not minimized - minimize it
     xdotool windowminimize "$wid"
     exit 0
   fi
   if ! is_visible "$wid" && ! is_minimized "$wid"; then
+    # Window is not visible and not minimized - it's in a bad state, kill it
     xdotool windowkill "$wid" 2>/dev/null || true
+    rm -f "$SOCKET_FILE" "$HEIGHT_FILE"
     wid=""
+  fi
+  if is_minimized "$wid" && is_visible "$wid"; then
+    # Window is minimized but still viewable - show it
+    layout_window "$wid"
+    xdotool windowactivate "$wid"
+    exit 0
   fi
 fi
 
@@ -92,12 +114,19 @@ initial_width=$(($1 - 14))
   --directory "$HOME" \
   /usr/bin/zsh
 
-for _ in 1 2 3 4 5 6 7 8 9 10; do
+# Wait for window to appear and layout properly (with timeout)
+attempt=0
+max_attempts=20
+while [ $attempt -lt $max_attempts ]; do
   wid="$(first_window || true)"
-  if [ -n "$wid" ]; then
+  if [ -n "$wid" ] && is_visible "$wid"; then
     layout_window "$wid"
     xdotool windowactivate "$wid"
     exit 0
   fi
-  sleep 0.1
+  attempt=$((attempt + 1))
+  sleep 0.05
 done
+
+printf "WARNING: Kitty window failed to appear after 1 second\n" >&2
+exit 1
