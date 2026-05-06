@@ -7,6 +7,8 @@ cd ~/Projects/oh-my-followcat-kitty
 ./install.sh
 ```
 
+安装时会备份被替换的 `kitty.conf` / `dropdown.conf`，备份文件会保存在原目录旁边。
+
 ## 快捷键速查表
 
 ```
@@ -16,6 +18,7 @@ cd ~/Projects/oh-my-followcat-kitty
 ║ Ctrl+`             ║ 呼出/隐藏下拉终端                   ║
 ║ Ctrl+↑/↓           ║ 增加/减少窗口高度                   ║
 ║ Ctrl+←/→           ║ 调整内部窗口宽度                    ║
+║ Ctrl+Alt+方向键    ║ 下拉终端中调整分屏窗口大小          ║
 ║ Ctrl+Shift+T       ║ 新建标签                            ║
 ║ Ctrl+Shift+W       ║ 关闭标签                            ║
 ║ Ctrl+Tab           ║ 下一个标签                          ║
@@ -23,6 +26,15 @@ cd ~/Projects/oh-my-followcat-kitty
 ║ Ctrl+F1-F10        ║ 跳转到标签 1-10                     ║
 ║ Ctrl+=/-/0         ║ 增大/减小/重置字体大小              ║
 ║ Ctrl+Shift+H       ║ 显示滚动缓存                        ║
+║ Ctrl+Shift+/       ║ 搜索滚动缓存                        ║
+║ Ctrl+Shift+G       ║ 查看上一条非空命令输出              ║
+║ Ctrl+Shift+U       ║ 查看上次跳转到的命令输出            ║
+║ Ctrl+Shift+Z/X     ║ 跳转上一条/下一条命令提示符         ║
+║ Ctrl+Shift+A       ║ 回到上次跳转的命令提示符            ║
+║ Ctrl+Shift+L       ║ 切换窗口布局                        ║
+║ Ctrl+Shift+M       ║ 创建屏幕文本标记                    ║
+║ Ctrl+Alt+M         ║ 移除屏幕文本标记                    ║
+║ Ctrl+Shift+F1      ║ 打开快捷键帮助                      ║
 ║ Ctrl+Shift+V       ║ 从剪贴板粘贴                        ║
 ║ Ctrl+Shift+C       ║ 复制到剪贴板                        ║
 ╚════════════════════╩════════════════════════════════════╝
@@ -59,7 +71,8 @@ oh-my-followcat-kitty/
 ├── bin/
 │   ├── kitty-quick-access-toggle      # 窗口切换脚本
 │   ├── kitty-quick-access-resize-height # 高度调整脚本
-│   └── kitty-quick-access-new-tab     # 现有下拉终端中新建标签
+│   ├── kitty-quick-access-new-tab     # 现有下拉终端中新建标签
+│   └── kitty-shortcuts-help           # 快捷键帮助
 └── docs/
     └── CONFIGURATION.md               # 详细配置文档
 ```
