@@ -1,0 +1,103 @@
+#!/bin/sh
+set -eu
+
+KITTY="$HOME/.local/bin/kitty"
+CONFIG="$HOME/.config/kitty/dropdown.conf"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
+SOCKET_FILE="$STATE_DIR/socket"
+HEIGHT_FILE="$STATE_DIR/height"
+APP_CLASS="kitty-quick-access-guake"
+DEFAULT_HEIGHT=1000
+TOP="${KITTY_DROPDOWN_TOP:-53}"
+
+mkdir -p "$STATE_DIR"
+
+# Make IME work reliably for kitty/fcitx5 on X11.
+: "${GTK_IM_MODULE:=fcitx}"
+: "${QT_IM_MODULE:=fcitx}"
+: "${XMODIFIERS:=@im=fcitx}"
+: "${GLFW_IM_MODULE:=ibus}"
+export GTK_IM_MODULE QT_IM_MODULE XMODIFIERS GLFW_IM_MODULE
+
+dropdown_height() {
+  height="$(cat "$HEIGHT_FILE" 2>/dev/null || true)"
+  case "$height" in
+    ''|*[!0-9]*) printf '%s\n' "$DEFAULT_HEIGHT" ;;
+    *) printf '%s\n' "$height" ;;
+  esac
+}
+
+first_window() {
+  xdotool search --class "$APP_CLASS" 2>/dev/null | head -n 1
+}
+
+is_visible() {
+  xwininfo -id "$1" 2>/dev/null | grep -q 'Map State: IsViewable'
+}
+
+is_minimized() {
+  xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_HIDDEN'
+}
+
+layout_window() {
+  wid="$1"
+  height="$(dropdown_height)"
+  set -- $(xdotool getdisplaygeometry)
+  width=$(($1 - 14))
+  screen_height="$2"
+  max_height=$((screen_height - TOP))
+  [ "$height" -gt "$max_height" ] && height="$max_height"
+  xdotool windowmove "$wid" 0 "$TOP"
+  xdotool windowsize "$wid" "$width" "$height"
+  
+  # Remove decorations using MOTIF hints
+  xprop -id "$wid" -f _MOTIF_WM_HINTS 32c -set _MOTIF_WM_HINTS "2, 0, 0, 0, 0" 2>/dev/null || true
+  
+  xdotool windowactivate "$wid"
+  xprop -id "$wid" -f _NET_WM_STATE 32a -set _NET_WM_STATE \
+    "_NET_WM_STATE_ABOVE,_NET_WM_STATE_SKIP_TASKBAR,_NET_WM_STATE_SKIP_PAGER" >/dev/null 2>&1 || true
+}
+
+wid="$(first_window || true)"
+
+if [ -n "$wid" ]; then
+  if is_visible "$wid" && ! is_minimized "$wid"; then
+    xdotool windowminimize "$wid"
+    exit 0
+  fi
+  if ! is_visible "$wid" && ! is_minimized "$wid"; then
+    xdotool windowkill "$wid" 2>/dev/null || true
+    wid=""
+  fi
+fi
+
+if [ -n "$wid" ]; then
+  layout_window "$wid"
+  xdotool windowactivate "$wid"
+  exit 0
+fi
+
+socket_path="/tmp/kitty-dropdown-$$"
+printf 'unix:%s\n' "$socket_path" > "$SOCKET_FILE"
+set -- $(xdotool getdisplaygeometry)
+initial_width=$(($1 - 14))
+"$KITTY" \
+  --detach \
+  --class "$APP_CLASS" \
+  --name "$APP_CLASS" \
+  --config "$CONFIG" \
+  --listen-on "unix:$socket_path" \
+  --override initial_window_width="$initial_width" \
+  --override initial_window_height="$(dropdown_height)" \
+  --directory "$HOME" \
+  /usr/bin/zsh
+
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  wid="$(first_window || true)"
+  if [ -n "$wid" ]; then
+    layout_window "$wid"
+    xdotool windowactivate "$wid"
+    exit 0
+  fi
+  sleep 0.1
+done
