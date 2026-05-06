@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+KITTEN="$HOME/.local/bin/kitten"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
+SOCKET_FILE="$STATE_DIR/socket"
+
+try_socket() {
+  socket_addr="$1"
+  if "$KITTEN" @ --to "$socket_addr" ls >/dev/null 2>&1; then
+    exec "$KITTEN" @ --to "$socket_addr" action launch --type=tab --cwd="$HOME" /usr/bin/zsh
+  fi
+}
+
+if [ -f "$SOCKET_FILE" ]; then
+  socket_addr="$(cat "$SOCKET_FILE")"
+  case "$socket_addr" in
+    unix:*)
+      socket_path="${socket_addr#unix:}"
+      if [ -S "$socket_path" ]; then
+        try_socket "$socket_addr"
+      fi
+      ;;
+  esac
+fi
+
+for socket_path in /tmp/kitty-dropdown-*; do
+  [ -S "$socket_path" ] || continue
+  try_socket "unix:$socket_path"
+done
+
+"$HOME/.local/bin/kitty-quick-access-toggle"
+sleep 0.2
+exec "$0"
