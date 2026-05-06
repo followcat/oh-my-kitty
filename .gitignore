@@ -1,0 +1,9 @@
+# Runtime state
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Installation artifacts
+.installed
