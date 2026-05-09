@@ -156,7 +156,7 @@ MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
 ### 快捷键显示但窗口不出现
 检查 kitty 进程是否正在运行：
 ```
-ps aux | grep kitty-quick-access-guake
+ps aux | grep kitty-quick-access-dropdown
 ```
 
 重新启动：

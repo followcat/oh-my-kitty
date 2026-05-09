@@ -6,7 +6,7 @@ CONFIG="$HOME/.config/kitty/dropdown.conf"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
 SOCKET_FILE="$STATE_DIR/socket"
 HEIGHT_FILE="$STATE_DIR/height"
-APP_CLASS="kitty-quick-access-guake"
+APP_CLASS="kitty-quick-access-dropdown"
 DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
 MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
 TOP="${KITTY_DROPDOWN_TOP:-53}"
@@ -55,19 +55,6 @@ is_minimized() {
   xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_HIDDEN'
 }
 
-is_maximized() {
-  xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -Eq '_NET_WM_STATE_MAXIMIZED_(HORZ|VERT)'
-}
-
-unmaximize_window() {
-  wid="$1"
-  if is_maximized "$wid"; then
-    xdotool windowactivate "$wid" 2>/dev/null || true
-    xdotool key super+m 2>/dev/null || true
-    sleep 0.2
-  fi
-}
-
 is_config_applied() {
   wid="$1"
   # Check if opacity is set correctly (0.88) - quick indicator of config application
@@ -83,8 +70,6 @@ layout_window() {
   max_height="$(max_dropdown_height)"
   [ "$height" -gt "$max_height" ] && height="$max_height"
 
-  unmaximize_window "$wid"
-  
   # Force geometry first
   xdotool windowsize "$wid" "$width" "$height" 2>/dev/null || true
   xdotool windowmove "$wid" 0 "$TOP" 2>/dev/null || true
@@ -135,7 +120,7 @@ socket_path="/tmp/kitty-dropdown-$$"
 printf 'unix:%s\n' "$socket_path" > "$SOCKET_FILE"
 set -- $(xdotool getdisplaygeometry)
 initial_width=$(($1 - 14))
-initial_height="$(dropdown_height)"
+initial_height="$DEFAULT_HEIGHT"
 max_height="$(max_dropdown_height)"
 [ "$initial_height" -gt "$max_height" ] && initial_height="$max_height"
 "$KITTY" \

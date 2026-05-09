@@ -5,7 +5,7 @@ STEP="${1:-80}"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
 HEIGHT_FILE="$STATE_DIR/height"
 LOG_FILE="$STATE_DIR/resize-height.log"
-APP_CLASS="kitty-quick-access-guake"
+APP_CLASS="kitty-quick-access-dropdown"
 TOP="${KITTY_DROPDOWN_TOP:-53}"
 MIN_HEIGHT="${KITTY_QUICK_ACCESS_MIN_HEIGHT:-360}"
 MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
@@ -19,19 +19,6 @@ current_height() {
     ''|*[!0-9]*) printf '%s\n' "$DEFAULT_HEIGHT" ;;
     *) printf '%s\n' "$height" ;;
   esac
-}
-
-is_maximized() {
-  xprop -id "$1" _NET_WM_STATE 2>/dev/null | grep -Eq '_NET_WM_STATE_MAXIMIZED_(HORZ|VERT)'
-}
-
-unmaximize_window() {
-  wid="$1"
-  if is_maximized "$wid"; then
-    xdotool windowactivate "$wid" 2>/dev/null || true
-    xdotool key super+m 2>/dev/null || true
-    sleep 0.2
-  fi
 }
 
 wid="$(xdotool search --class "$APP_CLASS" 2>/dev/null | head -n 1 || true)"
@@ -53,7 +40,6 @@ new_height=$((old_height + STEP))
 printf '%s\n' "$new_height" > "$HEIGHT_FILE"
 
 if [ -n "$wid" ]; then
-  unmaximize_window "$wid"
   xdotool windowmove "$wid" 0 "$TOP"
   xdotool windowsize "$wid" "$screen_width" "$new_height"
 fi
