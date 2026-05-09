@@ -30,9 +30,9 @@ cd ~/Projects/oh-my-followcat-kitty
 ║ Ctrl+Shift+G       ║ 查看上一条非空命令输出              ║
 ║ Ctrl+Shift+U       ║ 查看上次跳转到的命令输出            ║
 ║ Ctrl+Shift+I       ║ 打开 AIChat TUI 分屏                ║
-║ Ctrl+Shift+Y       ║ 用自然语言生成 shell 命令           ║
+║ Ctrl+Shift+Y       ║ 生成命令并作用到源窗口              ║
 ║ Ctrl+Shift+S       ║ 把选中文本发送给 AIChat             ║
-║ Ctrl+Shift+Alt+S   ║ 从选中文本生成 shell 命令           ║
+║ Ctrl+Shift+Alt+S   ║ 从选中文本生成命令并作用到源窗口    ║
 ║ Ctrl+Shift+R       ║ 把上一条命令输出发送给 AIChat       ║
 ║ Ctrl+Shift+K       ║ 把当前屏幕发送给 AIChat             ║
 ║ Ctrl+Shift+Z/X     ║ 跳转上一条/下一条命令提示符         ║

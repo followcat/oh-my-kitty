@@ -41,12 +41,12 @@ Shell integration
 
 AIChat
   Ctrl+Shift+I        Open AIChat TUI split
-  Ctrl+Shift+Y        Generate a shell command in TUI split
+  Ctrl+Shift+Y        Generate command for source window
   Ctrl+Shift+S        Send selection to AIChat TUI split
-  Ctrl+Shift+Alt+S    Generate a shell command from selection
+  Ctrl+Shift+Alt+S    Generate command from selection for source
   Ctrl+Shift+R        Send last command output to AIChat
   Ctrl+Shift+K        Send current screen to AIChat
-                      Local TUI split, works during kitten ssh
+                      Source window stays as command/context target
 
 Scrollback and marks
   Ctrl+Shift+H        Show scrollback

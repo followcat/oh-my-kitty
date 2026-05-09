@@ -45,9 +45,9 @@ Guake 风格下拉窗口切换脚本：
 ### kitty-aichat
 AIChat TUI wrapper：
 - `Ctrl+Shift+I`：直接打开 AIChat REPL
-- `Ctrl+Shift+Y`：输入自然语言需求，调用 `aichat -e` 生成 shell 命令
+- `Ctrl+Shift+Y`：输入自然语言需求，生成 shell 命令后可粘贴或执行到源窗口
 - `Ctrl+Shift+S`：把当前选区通过 stdin 发送给 AIChat
-- `Ctrl+Shift+Alt+S`：把当前选区作为 shell 需求，调用 `aichat -e` 生成命令
+- `Ctrl+Shift+Alt+S`：把当前选区作为 shell 需求，生成命令后可粘贴或执行到源窗口
 - `Ctrl+Shift+R`：把上一条命令输出通过 stdin 发送给 AIChat
 - `Ctrl+Shift+K`：把当前屏幕通过 stdin 发送给 AIChat
 
@@ -55,6 +55,8 @@ AIChat TUI wrapper：
 AIChat 置顶浮窗启动器，作为备用入口保留。它会启动一个独立的小 kitty 窗口，默认尺寸为 `760x520`，放在屏幕右上方并设置 `_NET_WM_STATE_ABOVE`。再次触发快捷键时，如果浮窗已经存在，会直接聚焦已有窗口。
 
 默认快捷键使用 kitty 内部分屏 TUI，不启动独立 OS 窗口，并固定从本机 `HOME` 启动，不跟随当前窗口 cwd。这样在 `kitten ssh` 进入远端目录后，快捷键仍然调用本机的 `aichat`，不会因为远端 cwd 在本机不存在而启动失败。
+
+启动 AIChat 分屏时会记录源窗口 ID。命令生成类快捷键会在 AIChat 分屏中生成候选命令，再选择粘贴或执行到源窗口；选区、上一条输出和当前屏幕分析类快捷键仍以源窗口内容作为上下文。
 
 可通过环境变量调整位置和尺寸：
 - `KITTY_AICHAT_FLOAT_WIDTH`

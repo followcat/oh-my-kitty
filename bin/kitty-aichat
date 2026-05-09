@@ -19,6 +19,85 @@ EOF
 fi
 
 mode="${1:-repl}"
+source_window="${KITTY_AICHAT_SOURCE_WINDOW_ID:-}"
+
+source_match() {
+  case "$source_window" in
+    ''|*[!0-9]*) printf '%s\n' 'recent:1' ;;
+    *) printf 'id:%s\n' "$source_window" ;;
+  esac
+}
+
+send_to_source() {
+  "$HOME/.local/bin/kitten" @ send-text --match "$(source_match)" --stdin
+}
+
+focus_source() {
+  "$HOME/.local/bin/kitten" @ focus-window --match "$(source_match)" 2>/dev/null || true
+}
+
+command_from_request() {
+  request="$1"
+  aichat -c "请把下面的需求转换成一条可在 shell 中执行的命令。只输出命令本身，不要解释，不要 Markdown，不要代码块：$request"
+}
+
+extract_command() {
+  awk '
+    /<think>/ { thinking=1; next }
+    /<\/think>/ { thinking=0; next }
+    thinking { next }
+    /^```/ { next }
+    /^[[:space:]]*$/ { next }
+    {
+      sub(/^[[:space:]]*/, "")
+      sub(/[[:space:]]*$/, "")
+      print
+      exit
+    }
+  '
+}
+
+source_shell_command() {
+  request="$1"
+  command_text="$(command_from_request "$request")"
+  command_text="$(printf '%s\n' "$command_text" | extract_command)"
+  [ -n "$command_text" ] || exit 0
+
+  printf '%s\n' "$command_text"
+  printf '\n[p] paste to source | [e] execute in source | [d] describe | [c] copy | [q] quit: '
+  IFS= read -r action || action=q
+  case "$action" in
+    e|execute)
+      printf '%s\n' "$command_text" | send_to_source || {
+        printf 'ERROR: no source kitty window available.\n' >&2
+        exit 1
+      }
+      focus_source
+      ;;
+    p|paste|'')
+      printf '%s' "$command_text" | send_to_source || {
+        printf 'ERROR: no source kitty window available.\n' >&2
+        exit 1
+      }
+      focus_source
+      ;;
+    d|describe)
+      exec aichat "请用中文解释这条 shell 命令的作用、风险和可选参数：$command_text"
+      ;;
+    c|copy)
+      printf '%s' "$command_text" | xclip -selection clipboard 2>/dev/null || printf '%s' "$command_text" | xsel -ib 2>/dev/null || {
+        printf 'Clipboard tool not found. Command:\n%s\n' "$command_text" >&2
+        exit 1
+      }
+      ;;
+    q|quit)
+      exit 0
+      ;;
+    *)
+      exit 0
+      ;;
+  esac
+}
 
 case "$mode" in
   repl)
@@ -28,12 +107,12 @@ case "$mode" in
     printf 'Describe the shell command you want:\n> '
     IFS= read -r request
     [ -n "$request" ] || exit 0
-    exec aichat -e "$request"
+    source_shell_command "$request"
     ;;
   shell-input)
     request="$(cat)"
     [ -n "$request" ] || exit 0
-    exec aichat -e "$request"
+    source_shell_command "$request"
     ;;
   selection)
     exec aichat "请解释/总结这段选择内容。请用中文回答，必要时给出下一步操作。"
