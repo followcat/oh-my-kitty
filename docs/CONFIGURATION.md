@@ -19,6 +19,7 @@
 - 自定义快捷键（Ctrl+上下调整高度）
 - 与普通 kitty 一致的布局、滚动缓存、命令输出浏览快捷键
 - `Ctrl+Alt+方向键` 调整下拉终端中的分屏窗口大小
+- AIChat TUI overlay 快捷键，支持选区、上一条命令输出和当前屏幕输入
 
 ## 脚本文件
 
@@ -26,18 +27,42 @@
 Guake 风格下拉窗口切换脚本：
 - 第一次按 Ctrl+` 显示窗口
 - 第二次按 Ctrl+` 最小化窗口
+- 默认高度为 820px，并限制在屏幕高度的 70% 以内
 - 状态保存在 `~/.local/state/kitty-quick-access/`
 
 ### kitty-quick-access-resize-height
 调整下拉窗口高度：
 - 接受参数：+40 或 -40（像素）
 - 保存高度状态用于下次启动
+- 默认不会超过屏幕高度的 70%
 - 由 Ctrl+上/下 快捷键触发
 
 ### kitty-quick-access-new-tab
 复用当前下拉终端实例：
 - 如果下拉终端已存在，则直接新建标签
 - 如果下拉终端不存在，则先拉起窗口再新建标签
+
+### kitty-aichat
+AIChat TUI overlay wrapper：
+- `Ctrl+Shift+I`：直接打开 AIChat REPL
+- `Ctrl+Shift+Y`：输入自然语言需求，调用 `aichat -e` 生成 shell 命令
+- `Ctrl+Shift+S`：把当前选区通过 stdin 发送给 AIChat
+- `Ctrl+Shift+Alt+S`：把当前选区作为 shell 需求，调用 `aichat -e` 生成命令
+- `Ctrl+Shift+R`：把上一条命令输出通过 stdin 发送给 AIChat
+- `Ctrl+Shift+K`：把当前屏幕通过 stdin 发送给 AIChat
+
+### kitty-aichat-float
+AIChat 置顶浮窗启动器，作为备用入口保留。它会启动一个独立的小 kitty 窗口，默认尺寸为 `760x520`，放在屏幕右上方并设置 `_NET_WM_STATE_ABOVE`。再次触发快捷键时，如果浮窗已经存在，会直接聚焦已有窗口。
+
+默认快捷键使用 kitty overlay/TUI，不启动独立 OS 窗口，并固定从本机 `HOME` 启动，不跟随当前窗口 cwd。这样在 `kitten ssh` 进入远端目录后，快捷键仍然调用本机的 `aichat`，不会因为远端 cwd 在本机不存在而启动失败。
+
+可通过环境变量调整位置和尺寸：
+- `KITTY_AICHAT_FLOAT_WIDTH`
+- `KITTY_AICHAT_FLOAT_HEIGHT`
+- `KITTY_AICHAT_FLOAT_TOP`
+- `KITTY_AICHAT_FLOAT_RIGHT_GAP`
+
+没有默认绑定完整 scrollback，因为本配置保留 1,000,000 行历史，一键发送完整 scrollback 容易产生很大的模型输入。
 
 ## 关键特性
 
@@ -105,9 +130,10 @@ map ctrl+up launch --type=background @HOME@/.local/bin/kitty-quick-access-resize
 `@HOME@` 会在运行 `install.sh` 时替换成当前用户的 home 目录。
 
 ### 修改默认高度
-编辑 `bin/kitty-quick-access-toggle` 脚本，修改 `DEFAULT_HEIGHT`：
+编辑 `bin/kitty-quick-access-toggle` 脚本，修改 `DEFAULT_HEIGHT` 或 `MAX_HEIGHT_PERCENT`：
 ```
-DEFAULT_HEIGHT=1000  # 改成你喜欢的高度（像素）
+DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
+MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-70}"
 ```
 
 ## 故障排除

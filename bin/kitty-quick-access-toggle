@@ -7,7 +7,8 @@ STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
 SOCKET_FILE="$STATE_DIR/socket"
 HEIGHT_FILE="$STATE_DIR/height"
 APP_CLASS="kitty-quick-access-guake"
-DEFAULT_HEIGHT=1000
+DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
+MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-70}"
 TOP="${KITTY_DROPDOWN_TOP:-53}"
 
 mkdir -p "$STATE_DIR"
@@ -31,6 +32,15 @@ dropdown_height() {
     ''|*[!0-9]*) printf '%s\n' "$DEFAULT_HEIGHT" ;;
     *) printf '%s\n' "$height" ;;
   esac
+}
+
+max_dropdown_height() {
+  set -- $(xdotool getdisplaygeometry)
+  screen_height="$2"
+  percent_height=$((screen_height * MAX_HEIGHT_PERCENT / 100))
+  absolute_max=$((screen_height - TOP))
+  [ "$percent_height" -gt "$absolute_max" ] && percent_height="$absolute_max"
+  printf '%s\n' "$percent_height"
 }
 
 first_window() {
@@ -57,8 +67,7 @@ layout_window() {
   height="$(dropdown_height)"
   set -- $(xdotool getdisplaygeometry)
   width=$(($1 - 14))
-  screen_height="$2"
-  max_height=$((screen_height - TOP))
+  max_height="$(max_dropdown_height)"
   [ "$height" -gt "$max_height" ] && height="$max_height"
   
   # Force geometry first
@@ -111,6 +120,9 @@ socket_path="/tmp/kitty-dropdown-$$"
 printf 'unix:%s\n' "$socket_path" > "$SOCKET_FILE"
 set -- $(xdotool getdisplaygeometry)
 initial_width=$(($1 - 14))
+initial_height="$(dropdown_height)"
+max_height="$(max_dropdown_height)"
+[ "$initial_height" -gt "$max_height" ] && initial_height="$max_height"
 "$KITTY" \
   --detach \
   --class "$APP_CLASS" \
@@ -118,7 +130,7 @@ initial_width=$(($1 - 14))
   --config "$CONFIG" \
   --listen-on "unix:$socket_path" \
   --override initial_window_width="$initial_width" \
-  --override initial_window_height="$(dropdown_height)" \
+  --override initial_window_height="$initial_height" \
   --directory "$HOME" \
   /usr/bin/zsh
 
