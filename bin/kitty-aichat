@@ -40,9 +40,40 @@ focus_source() {
   "$HOME/.local/bin/kitten" @ focus-window --match "$(source_match)" 2>/dev/null || true
 }
 
+get_context() {
+  # 首先检查是否从 stdin 接收了上下文（来自源窗口或管道）
+  if [ ! -t 0 ]; then
+    # 有 stdin 输入，直接用
+    stdin_content="$(cat)"
+    if [ -n "$stdin_content" ]; then
+      printf "%s\n" "$stdin_content"
+      return
+    fi
+  fi
+  
+  # 本地模式：收集本机上下文
+  # （对于远程 ssh，用户应该在远程直接执行 aichat shell，这样上下文就是远程的）
+  {
+    printf "=== 系统环境 ===\n"
+    printf "OS: $(uname -s)\n"
+    printf "Shell: $SHELL\n"
+    printf "User: $(whoami)@$(hostname)\n"
+    printf "CWD: $(pwd)\n"
+    printf "\n=== 最近命令 (最近5条) ===\n"
+    history 2>/dev/null | tail -5 | sed 's/^[[:space:]]*[0-9]*[[:space:]]*//g' || printf "[历史不可用]\n"
+    printf "\n=== 当前目录文件 (前15项) ===\n"
+    ls -la 2>/dev/null | head -16 || printf "[列表不可用]\n"
+  } 2>/dev/null
+}
+
 command_from_request() {
   request="$1"
-  aichat -c "请把下面的需求转换成一条可在 shell 中执行的命令。只输出命令本身，不要解释，不要 Markdown，不要代码块：$request"
+  context="$(get_context)"
+  aichat -c "你是一个 shell 命令生成助手。根据以下上下文信息和用户需求，生成最合适的命令。只输出命令本身，不要解释、不要 Markdown、不要代码块。
+
+$context
+
+需求：$request"
 }
 
 read_shell_request() {
