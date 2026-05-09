@@ -10,6 +10,7 @@ APP_CLASS="kitty-quick-access-dropdown"
 DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
 MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
 TOP="${KITTY_DROPDOWN_TOP:-53}"
+RIGHT_GAP="${KITTY_DROPDOWN_RIGHT_GAP:-0}"
 
 mkdir -p "$STATE_DIR"
 
@@ -66,7 +67,8 @@ layout_window() {
   wid="$1"
   height="$(dropdown_height)"
   set -- $(xdotool getdisplaygeometry)
-  width=$(($1 - 14))
+  width=$(($1 - RIGHT_GAP))
+  [ "$width" -lt 1 ] && width=1
   max_height="$(max_dropdown_height)"
   [ "$height" -gt "$max_height" ] && height="$max_height"
 
@@ -119,7 +121,8 @@ fi
 socket_path="/tmp/kitty-dropdown-$$"
 printf 'unix:%s\n' "$socket_path" > "$SOCKET_FILE"
 set -- $(xdotool getdisplaygeometry)
-initial_width=$(($1 - 14))
+initial_width=$(($1 - RIGHT_GAP))
+[ "$initial_width" -lt 1 ] && initial_width=1
 initial_height="$DEFAULT_HEIGHT"
 max_height="$(max_dropdown_height)"
 [ "$initial_height" -gt "$max_height" ] && initial_height="$max_height"

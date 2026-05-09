@@ -7,6 +7,7 @@ HEIGHT_FILE="$STATE_DIR/height"
 LOG_FILE="$STATE_DIR/resize-height.log"
 APP_CLASS="kitty-quick-access-dropdown"
 TOP="${KITTY_DROPDOWN_TOP:-53}"
+RIGHT_GAP="${KITTY_DROPDOWN_RIGHT_GAP:-0}"
 MIN_HEIGHT="${KITTY_QUICK_ACCESS_MIN_HEIGHT:-360}"
 MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
 DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
@@ -24,7 +25,8 @@ current_height() {
 wid="$(xdotool search --class "$APP_CLASS" 2>/dev/null | head -n 1 || true)"
 
 set -- $(xdotool getdisplaygeometry)
-screen_width=$(($1 - 14))
+screen_width=$(($1 - RIGHT_GAP))
+[ "$screen_width" -lt 1 ] && screen_width=1
 screen_height="$2"
 default_max=$((screen_height * MAX_HEIGHT_PERCENT / 100))
 absolute_max=$((screen_height - TOP))
