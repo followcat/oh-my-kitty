@@ -51,6 +51,33 @@ AIChat TUI wrapper：
 - `Ctrl+Shift+R`：把上一条命令输出通过 stdin 发送给 AIChat
 - `Ctrl+Shift+K`：把当前屏幕通过 stdin 发送给 AIChat
 
+**命令生成的上下文信息**
+
+`Ctrl+Shift+Y` 生成命令时会自动收集并传递以下上下文给 AIChat：
+- 系统信息（OS、Shell 类型、用户、主机名）
+- 当前工作目录
+- 最近执行的命令历史（最近5条）
+- 当前目录的文件列表（前15项）
+
+这样 AIChat 可以生成更符合当前环境和项目的命令。
+
+**远程 SSH 中使用**
+
+当通过 `kitten ssh` 进入远程机器时，`Ctrl+Shift+Y` 会在本机上下文中生成命令。如果需要用**远程**的上下文生成命令，有两种方式：
+
+1. **在远程窗口中直接启动 aichat**：
+   ```bash
+   ~/.local/bin/kitty-aichat shell
+   ```
+   这样会收集远程的上下文（cwd、历史、文件列表）
+
+2. **在远程也安装本项目**：
+   ```bash
+   cd ~/Projects/oh-my-kitty  # 本地
+   tar czf - . | ssh remote-host "cd /tmp && tar xzf - && ./oh-my-kitty/install.sh"
+   ```
+   然后在远程按 `Ctrl+Shift+Y` 就能用远程的上下文生成命令
+
 ### kitty-aichat-float
 AIChat 置顶浮窗启动器，作为备用入口保留。它会启动一个独立的小 kitty 窗口，默认尺寸为 `760x520`，放在屏幕右上方并设置 `_NET_WM_STATE_ABOVE`。再次触发快捷键时，如果浮窗已经存在，会直接聚焦已有窗口。
 
@@ -138,6 +165,12 @@ map ctrl+up launch --type=background @HOME@/.local/bin/kitty-quick-access-resize
 ```
 DEFAULT_HEIGHT="${KITTY_QUICK_ACCESS_DEFAULT_HEIGHT:-820}"
 MAX_HEIGHT_PERCENT="${KITTY_QUICK_ACCESS_MAX_HEIGHT_PERCENT:-100}"
+```
+
+### 修改窗口左右留白
+默认会铺满整个屏幕宽度。如果希望右侧保留空隙，可设置：
+```
+KITTY_DROPDOWN_RIGHT_GAP=14
 ```
 
 ## 故障排除
