@@ -64,6 +64,7 @@ install_file "$BIN_DIR/kitty-quick-access-new-tab" "$HOME/.local/bin/kitty-quick
 install_file "$BIN_DIR/kitty-shortcuts-help" "$HOME/.local/bin/kitty-shortcuts-help" 0755
 install_file "$BIN_DIR/kitty-aichat" "$HOME/.local/bin/kitty-aichat" 0755
 install_file "$BIN_DIR/kitty-aichat-float" "$HOME/.local/bin/kitty-aichat-float" 0755
+install_file "$BIN_DIR/kitty-get-shell-context" "$HOME/.local/bin/kitty-get-shell-context" 0755
 
 add_custom_keybinding_path() {
     path="$1"
