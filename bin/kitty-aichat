@@ -138,8 +138,8 @@ source_shell_command() {
   [ -n "$command_text" ] || exit 0
 
   printf '%s\n' "$command_text"
-  printf '\n[p] paste to source | [e] execute in source | [d] describe | [c] copy | [q] quit: '
-  IFS= read -r action || action=q
+  printf '\n[p] paste to source | [e] execute in source | [d] describe | [c] copy | [q] quit: ' >&2
+  IFS= read -r -p '' action < /dev/tty || action=q
   case "$action" in
     e|execute)
       printf '%s\n' "$command_text" | send_to_source || {
