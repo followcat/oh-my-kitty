@@ -131,6 +131,8 @@ extract_command() {
 
 source_shell_command() {
   request="$1"
+  # 前文上下文已经在 get_command_context() 中处理过了
+  # 如果 shell 模式有 stdin，它会被自动用上
   command_text="$(command_from_request "$request")"
   command_text="$(printf '%s\n' "$command_text" | extract_command)"
   [ -n "$command_text" ] || exit 0
@@ -176,10 +178,16 @@ case "$mode" in
     exec aichat
     ;;
   shell)
-    printf 'Describe the shell command you want:\n'
-    request="$(read_shell_request)"
-    [ -n "$request" ] || exit 0
-    source_shell_command "$request"
+    # 在 shell 模式下，stdin 可能包含前一条命令的输出
+    # 我们需要：
+    # 1. 保存 stdin 内容作为上下文
+    # 2. 从 /dev/tty（真实终端）读取用户输入
+    stdin_backup="$(cat 2>/dev/null)"
+    printf 'Describe the shell command you want:\n' >&2
+    IFS= read -r -p '> ' request < /dev/tty || [ -n "$request" ] || exit 0
+    
+    # 把保存的 stdin 恢复，用于 command_from_request()
+    printf '%s\n' "$stdin_backup" | source_shell_command "$request"
     ;;
   shell-input)
     request="$(cat)"
