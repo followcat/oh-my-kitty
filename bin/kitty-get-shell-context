@@ -1,0 +1,16 @@
+#!/bin/sh
+# 收集源窗口的 shell 上下文（本地或远程都有效）
+# 用于让 aichat 生成命令时有足够的上下文信息
+
+set -eu
+
+# 输出源窗口的上下文信息
+printf "=== 源窗口上下文 ===\n"
+printf "CWD: $(pwd)\n"
+printf "OS: $(uname -s)\n"
+printf "Shell: $SHELL\n"
+printf "User: $(whoami)@$(hostname)\n"
+printf "\n=== 最近命令历史 (前5条) ===\n"
+history 2>/dev/null | tail -5 | sed 's/^[[:space:]]*[0-9]*[[:space:]]*//g' || printf "[历史不可用]\n"
+printf "\n=== 当前目录文件列表 (前20项) ===\n"
+ls -la 2>/dev/null | head -21 || printf "[列表不可用]\n"
