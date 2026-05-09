@@ -9,7 +9,7 @@
 - 🎨 **美观配置** - 0.88 透明度，无标题栏
 - 💾 **大滚动缓存** - 100 万行历史记录
 - 🚀 **快速启动** - 即时显示/隐藏，无动画延迟
-- 🤖 **AIChat 快捷入口** - 在当前 kitty 终端 overlay/TUI 中聊天、解释选区、分析上一条命令输出，兼容 `kitten ssh` 远程会话
+- 🤖 **AIChat 快捷入口** - 在当前 kitty 终端底部分屏 TUI 中聊天、解释选区、分析上一条命令输出，兼容 `kitten ssh` 远程会话
 
 ## 安装
 
@@ -37,7 +37,7 @@
 | `Ctrl+Shift+/` | 搜索滚动缓存 |
 | `Ctrl+Shift+G` | 查看上一条非空命令输出 |
 | `Ctrl+Shift+U` | 查看上次跳转到的命令输出 |
-| `Ctrl+Shift+I` | 打开 AIChat TUI overlay |
+| `Ctrl+Shift+I` | 打开 AIChat TUI 分屏 |
 | `Ctrl+Shift+Y` | 用自然语言生成 shell 命令 |
 | `Ctrl+Shift+S` | 把选中文本发送给 AIChat |
 | `Ctrl+Shift+Alt+S` | 从选中文本生成 shell 命令 |
@@ -56,7 +56,7 @@
 - `bin/kitty-quick-access-resize-height` - 高度调整脚本
 - `bin/kitty-quick-access-new-tab` - 复用现有下拉终端新建标签
 - `bin/kitty-shortcuts-help` - 快捷键帮助 overlay
-- `bin/kitty-aichat` - AIChat TUI overlay wrapper
+- `bin/kitty-aichat` - AIChat TUI wrapper
 - `bin/kitty-aichat-float` - AIChat 置顶浮窗启动器（备用）
 
 ## 卸载
