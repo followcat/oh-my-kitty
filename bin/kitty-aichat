@@ -20,6 +20,10 @@ fi
 
 mode="${1:-repl}"
 source_window="${KITTY_AICHAT_SOURCE_WINDOW_ID:-}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kitty-quick-access"
+SHELL_HISTORY_FILE="$STATE_DIR/aichat-shell-history"
+
+mkdir -p "$STATE_DIR"
 
 source_match() {
   case "$source_window" in
@@ -39,6 +43,26 @@ focus_source() {
 command_from_request() {
   request="$1"
   aichat -c "请把下面的需求转换成一条可在 shell 中执行的命令。只输出命令本身，不要解释，不要 Markdown，不要代码块：$request"
+}
+
+read_shell_request() {
+  if [ -t 0 ] && command -v bash >/dev/null 2>&1; then
+    HISTFILE="$SHELL_HISTORY_FILE" bash -c '
+      set -e
+      touch "$HISTFILE"
+      history -r "$HISTFILE"
+      IFS= read -e -p "> " request
+      [ -n "$request" ] || exit 0
+      history -s "$request"
+      history -w "$HISTFILE"
+      printf "%s\n" "$request"
+    '
+  else
+    printf '> ' >&2
+    IFS= read -r request
+    [ -n "$request" ] || exit 0
+    printf '%s\n' "$request"
+  fi
 }
 
 extract_command() {
@@ -104,8 +128,8 @@ case "$mode" in
     exec aichat
     ;;
   shell)
-    printf 'Describe the shell command you want:\n> '
-    IFS= read -r request
+    printf 'Describe the shell command you want:\n'
+    request="$(read_shell_request)"
     [ -n "$request" ] || exit 0
     source_shell_command "$request"
     ;;

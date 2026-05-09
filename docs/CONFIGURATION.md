@@ -58,6 +58,8 @@ AIChat 置顶浮窗启动器，作为备用入口保留。它会启动一个独�
 
 启动 AIChat 分屏时会记录源窗口 ID。命令生成类快捷键会在 AIChat 分屏中生成候选命令，再选择粘贴或执行到源窗口；选区、上一条输出和当前屏幕分析类快捷键仍以源窗口内容作为上下文。
 
+`Ctrl+Shift+Y` 的需求输入使用 readline 历史，历史文件保存在 `~/.local/state/kitty-quick-access/aichat-shell-history`，可用上下方向键翻找之前输入过的需求。
+
 可通过环境变量调整位置和尺寸：
 - `KITTY_AICHAT_FLOAT_WIDTH`
 - `KITTY_AICHAT_FLOAT_HEIGHT`
