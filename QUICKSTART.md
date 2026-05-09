@@ -29,12 +29,19 @@ cd ~/Projects/oh-my-followcat-kitty
 ║ Ctrl+Shift+/       ║ 搜索滚动缓存                        ║
 ║ Ctrl+Shift+G       ║ 查看上一条非空命令输出              ║
 ║ Ctrl+Shift+U       ║ 查看上次跳转到的命令输出            ║
+║ Ctrl+Shift+I       ║ 打开 AIChat TUI overlay             ║
+║ Ctrl+Shift+Y       ║ 用自然语言生成 shell 命令           ║
+║ Ctrl+Shift+S       ║ 把选中文本发送给 AIChat             ║
+║ Ctrl+Shift+Alt+S   ║ 从选中文本生成 shell 命令           ║
+║ Ctrl+Shift+R       ║ 把上一条命令输出发送给 AIChat       ║
+║ Ctrl+Shift+K       ║ 把当前屏幕发送给 AIChat             ║
 ║ Ctrl+Shift+Z/X     ║ 跳转上一条/下一条命令提示符         ║
 ║ Ctrl+Shift+A       ║ 回到上次跳转的命令提示符            ║
 ║ Ctrl+Shift+L       ║ 切换窗口布局                        ║
 ║ Ctrl+Shift+M       ║ 创建屏幕文本标记                    ║
 ║ Ctrl+Alt+M         ║ 移除屏幕文本标记                    ║
-║ Ctrl+Shift+F1      ║ 打开快捷键帮助                      ║
+║ Ctrl+Shift+,       ║ 打开快捷键帮助                      ║
+║ Ctrl+Shift+F1/F13  ║ 打开快捷键帮助备用                  ║
 ║ Ctrl+Shift+V       ║ 从剪贴板粘贴                        ║
 ║ Ctrl+Shift+C       ║ 复制到剪贴板                        ║
 ╚════════════════════╩════════════════════════════════════╝
@@ -56,6 +63,9 @@ A: 编辑 `~/.config/kitty/dropdown.conf`，改 `background_opacity` 值
 ### Q: Ctrl+` 没反应?
 A: 确保窗口有焦点，或者运行 `~/.local/bin/kitty-quick-access-toggle` 手动启动
 
+### Q: 通过 kitten 远程后 AIChat 快捷键没反应?
+A: AIChat TUI overlay 固定从本机 HOME 启动，避免远程 cwd 导致本机 overlay 启动失败；重新运行 `./install.sh` 并重启 kitty。
+
 ### Q: 标题栏还在?
 A: 运行 `gsettings set org.gnome.desktop.interface enable-animations false` 禁用 GNOME 动画
 
@@ -72,7 +82,9 @@ oh-my-followcat-kitty/
 │   ├── kitty-quick-access-toggle      # 窗口切换脚本
 │   ├── kitty-quick-access-resize-height # 高度调整脚本
 │   ├── kitty-quick-access-new-tab     # 现有下拉终端中新建标签
-│   └── kitty-shortcuts-help           # 快捷键帮助
+│   ├── kitty-shortcuts-help           # 快捷键帮助
+│   ├── kitty-aichat                   # AIChat TUI overlay wrapper
+│   └── kitty-aichat-float             # AIChat 置顶浮窗启动器（备用）
 └── docs/
     └── CONFIGURATION.md               # 详细配置文档
 ```

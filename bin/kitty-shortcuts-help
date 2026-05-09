@@ -39,6 +39,15 @@ Shell integration
   Ctrl+Shift+G        Show last non-empty command output
   Ctrl+Shift+U        Show last visited command output
 
+AIChat
+  Ctrl+Shift+I        Open AIChat TUI overlay
+  Ctrl+Shift+Y        Generate a shell command in TUI overlay
+  Ctrl+Shift+S        Send selection to AIChat TUI overlay
+  Ctrl+Shift+Alt+S    Generate a shell command from selection
+  Ctrl+Shift+R        Send last command output to AIChat
+  Ctrl+Shift+K        Send current screen to AIChat
+                      Local TUI overlay, works during kitten ssh
+
 Scrollback and marks
   Ctrl+Shift+H        Show scrollback
   Ctrl+Shift+/        Search scrollback
@@ -58,7 +67,8 @@ Font
   Ctrl+0              Reset font size
 
 Help
-  Ctrl+Shift+F1       Open this help
+  Ctrl+Shift+,        Open this help
+  Ctrl+Shift+F1/F13   Open this help fallback
 
 Press q to close.
 EOF
