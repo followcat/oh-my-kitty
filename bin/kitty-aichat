@@ -66,10 +66,27 @@ get_context() {
   } 2>/dev/null
 }
 
+get_command_context() {
+  # 为 shell 命令生成补充上下文
+  # 如果有前一条命令的输出作为 stdin，则使用它
+  if [ ! -t 0 ]; then
+    stdin_content="$(cat)"
+    if [ -n "$stdin_content" ]; then
+      printf "=== 前一条命令的输出 ===\n%s\n" "$stdin_content"
+      return
+    fi
+  fi
+  
+  # 否则收集一般上下文
+  get_context
+}
+
 command_from_request() {
   request="$1"
-  context="$(get_context)"
+  context="$(get_command_context)"
   aichat -c "你是一个 shell 命令生成助手。根据以下上下文信息和用户需求，生成最合适的命令。只输出命令本身，不要解释、不要 Markdown、不要代码块。
+
+特别注意：如果提供了「前一条命令的输出」，你应该基于那个输出内容来生成命令（比如排序、过滤、转换）。
 
 $context
 
