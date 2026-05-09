@@ -62,6 +62,8 @@ install_file "$BIN_DIR/kitty-quick-access-toggle" "$HOME/.local/bin/kitty-quick-
 install_file "$BIN_DIR/kitty-quick-access-resize-height" "$HOME/.local/bin/kitty-quick-access-resize-height" 0755
 install_file "$BIN_DIR/kitty-quick-access-new-tab" "$HOME/.local/bin/kitty-quick-access-new-tab" 0755
 install_file "$BIN_DIR/kitty-shortcuts-help" "$HOME/.local/bin/kitty-shortcuts-help" 0755
+install_file "$BIN_DIR/kitty-aichat" "$HOME/.local/bin/kitty-aichat" 0755
+install_file "$BIN_DIR/kitty-aichat-float" "$HOME/.local/bin/kitty-aichat-float" 0755
 
 add_custom_keybinding_path() {
     path="$1"
@@ -137,3 +139,5 @@ echo "- ~/.local/bin/kitty-quick-access-toggle"
 echo "- ~/.local/bin/kitty-quick-access-resize-height"
 echo "- ~/.local/bin/kitty-quick-access-new-tab"
 echo "- ~/.local/bin/kitty-shortcuts-help"
+echo "- ~/.local/bin/kitty-aichat"
+echo "- ~/.local/bin/kitty-aichat-float"

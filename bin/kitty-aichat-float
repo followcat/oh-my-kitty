@@ -1,0 +1,91 @@
+#!/bin/sh
+set -eu
+
+KITTY="${KITTY:-$HOME/.local/bin/kitty}"
+AICHAT_WRAPPER="$HOME/.local/bin/kitty-aichat"
+BASE_APP_CLASS="kitty-aichat-float"
+WIDTH="${KITTY_AICHAT_FLOAT_WIDTH:-760}"
+HEIGHT="${KITTY_AICHAT_FLOAT_HEIGHT:-520}"
+TOP="${KITTY_AICHAT_FLOAT_TOP:-90}"
+RIGHT_GAP="${KITTY_AICHAT_FLOAT_RIGHT_GAP:-24}"
+mode="${1:-repl}"
+
+case "$mode" in
+  repl) APP_CLASS="$BASE_APP_CLASS" ;;
+  *) APP_CLASS="$BASE_APP_CLASS-$$" ;;
+esac
+
+first_window() {
+  xdotool search --class "$APP_CLASS" 2>/dev/null | head -n 1
+}
+
+layout_window() {
+  wid="$1"
+  set -- $(xdotool getdisplaygeometry)
+  screen_width="$1"
+  x=$((screen_width - WIDTH - RIGHT_GAP))
+  [ "$x" -lt 0 ] && x=0
+
+  xdotool windowsize "$wid" "$WIDTH" "$HEIGHT" 2>/dev/null || true
+  xdotool windowmove "$wid" "$x" "$TOP" 2>/dev/null || true
+  xprop -id "$wid" -f _NET_WM_STATE 32a -set _NET_WM_STATE \
+    "_NET_WM_STATE_ABOVE,_NET_WM_STATE_SKIP_TASKBAR" >/dev/null 2>&1 || true
+}
+
+if [ ! -x "$AICHAT_WRAPPER" ]; then
+  printf "ERROR: AIChat wrapper not found: %s\n" "$AICHAT_WRAPPER" >&2
+  exit 127
+fi
+
+if [ "$mode" = "repl" ]; then
+  existing="$(first_window || true)"
+  if [ -n "$existing" ]; then
+    layout_window "$existing"
+    xdotool windowactivate "$existing" 2>/dev/null || true
+    exit 0
+  fi
+fi
+
+stdin_file=""
+case "$mode" in
+  selection|shell-input|last-output|screen)
+    stdin_file="$(mktemp "${TMPDIR:-/tmp}/kitty-aichat-float.XXXXXX")"
+    cat > "$stdin_file"
+    ;;
+esac
+
+AICHAT_STDIN_FILE="$stdin_file" "$KITTY" \
+  --detach \
+  --class "$APP_CLASS" \
+  --name "$APP_CLASS" \
+  --title "AIChat" \
+  --override initial_window_width="$WIDTH" \
+  --override initial_window_height="$HEIGHT" \
+  --override remember_window_size=no \
+  --override hide_window_decorations=titlebar-and-borders \
+  --directory "$HOME" \
+  /bin/sh -c '
+    if [ -n "${AICHAT_STDIN_FILE:-}" ]; then
+      trap "rm -f \"$AICHAT_STDIN_FILE\"" EXIT
+      "$HOME/.local/bin/kitty-aichat" "$@" < "$AICHAT_STDIN_FILE"
+    else
+      "$HOME/.local/bin/kitty-aichat" "$@"
+    fi
+    printf "\nPress Enter to close."
+    IFS= read -r _ || true
+  ' sh "$@"
+
+attempt=0
+while [ "$attempt" -lt 30 ]; do
+  wid="$(first_window || true)"
+  if [ -n "$wid" ]; then
+    layout_window "$wid"
+    xdotool windowactivate "$wid" 2>/dev/null || true
+    exit 0
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.05
+done
+
+printf "WARNING: AIChat floating window failed to appear after 1.5 seconds\n" >&2
+exit 1

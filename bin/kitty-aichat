@@ -1,0 +1,50 @@
+#!/bin/sh
+set -eu
+
+if ! command -v aichat >/dev/null 2>&1; then
+  cat <<'EOF' | less -R
+AIChat is not installed.
+
+Install one of:
+  cargo install aichat
+  brew install aichat
+  pacman -S aichat
+
+Then configure AIChat once by running:
+  aichat
+
+Press q to close.
+EOF
+  exit 127
+fi
+
+mode="${1:-repl}"
+
+case "$mode" in
+  repl)
+    exec aichat
+    ;;
+  shell)
+    printf 'Describe the shell command you want:\n> '
+    IFS= read -r request
+    [ -n "$request" ] || exit 0
+    exec aichat -e "$request"
+    ;;
+  shell-input)
+    request="$(cat)"
+    [ -n "$request" ] || exit 0
+    exec aichat -e "$request"
+    ;;
+  selection)
+    exec aichat "请解释/总结这段选择内容。请用中文回答，必要时给出下一步操作。"
+    ;;
+  last-output)
+    exec aichat "下面是上一条命令输出。请用中文解释错误原因、关键线索和建议的下一步命令。"
+    ;;
+  screen)
+    exec aichat "下面是当前终端屏幕内容。请用中文分析当前状态、可能的问题和下一步建议。"
+    ;;
+  *)
+    exec aichat "$@"
+    ;;
+esac
